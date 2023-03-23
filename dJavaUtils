@@ -1,29 +1,14 @@
 #!/bin/bash
 
+source /home/djeovanz/scriptsUtils/dJavaUtils/core/utils/fcHelp.sh
+source /home/djeovanz/scriptsUtils/dJavaUtils/core/utils/fcPaths.sh
+source /home/djeovanz/scriptsUtils/dJavaUtils/core/runProjects/runJava.sh
+source /home/djeovanz/scriptsUtils/dJavaUtils/core/runProjects/deployJava.sh
+source /home/djeovanz/scriptsUtils/dJavaUtils/core/createProjects/createWebApp.sh
+source /home/djeovanz/scriptsUtils/dJavaUtils/core/createProjects/createMavenProject.sh
+
 defaultPath=$(cat "$HOME/.config/dJavaUtils/default_path.txt")
 
-function runJava(){
-    # obtener ruta absoluta del proyecto
-    projectPath=$(realpath "$1")
-    
-    sourcePath="$projectPath/src/main/java"
-
-    # compilar el proyecto con Maven
-    mvn compile -f "$projectPath/pom.xml"
-
-    # encontrar la ruta absoluta del archivo de la clase principal dentro de projectPath
-    mainClassFile=$(find "$sourcePath" -type f -name '*.java' -exec grep -l 'public static void main(String\[\] args)' {} \;)
-
-    # encontrar el paquete de la clase principal y el nombre de la clase sin la extensión .java
-    packageMainClass=$(grep -o '^\s*package\s\+\(\S\+\)' "$mainClassFile" | sed 's/^\s*package\s\+//' | tr -d ';')
-    nameMainClass=$(basename "$mainClassFile" .java)
-
-    # unir el paquete con el nombre de la clase para formar la clase principal completa
-    mainClass="${packageMainClass}.${nameMainClass}"
-
-    # ejecutar la clase principal
-    java -cp "$projectPath/target/classes:$(echo $projectPath/target/dependency/*.jar | tr ' ' ':')" "$mainClass"
-}
 
 function injectDependencies() {
     # obtener ruta absoluta del proyecto
@@ -33,210 +18,23 @@ function injectDependencies() {
     mvn dependency:copy-dependencies -DoutputDirectory="$projectPath/target/dependency" -f "$projectPath/pom.xml"
 }
 
-function createWebApp() {
-    projectName="$1"
-    filePom="$defaultPath/$projectName/pom.xml"
-    fileWeb="$defaultPath/$projectName/src/main/webapp/WEB-INF/web.xml"
-    fileIndex="$defaultPath/$projectName/src/main/webapp/index.jsp"
-    
-    echo '<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
-<%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<!DOCTYPE html>
-<html>
-  <head>
-    <meta charset="UTF-8">
-    <title>Título de la página</title>
-    <!-- Aquí puedes incluir tus hojas de estilo CSS y tus scripts JavaScript -->
-  </head>
-  <body>
-    <!-- Aquí va el contenido de la página -->
-    <header>
-      <h1>Título de la página</h1>
-      <nav>
-        <ul>
-          <li><a href="#">Enlace 1</a></li>
-          <li><a href="#">Enlace 2</a></li>
-          <li><a href="#">Enlace 3</a></li>
-        </ul>
-      </nav>
-    </header>
-    <main>
-      <h2>Subtítulo</h2>
-      <p>Este es un párrafo de ejemplo.</p>
-    </main>
-    <footer>
-      <p>Derechos de autor © 2023 - Todos los derechos reservados.</p>
-    </footer>
-  </body>
-</html>
-' > "$fileIndex"
-
-echo '<!DOCTYPE web-app PUBLIC
- "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
- "http://java.sun.com/dtd/web-app_2_3.dtd" >
-<web-app>
-  <display-name>My Web Application</display-name>
-  <servlet>
-    <servlet-name>MyController</servlet-name>
-    <servlet-class>com.djeovannyz.controller.MyController</servlet-class>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>MyController</servlet-name>
-    <url-pattern>/mycontroller</url-pattern>
-  </servlet-mapping>
-</web-app>
-' > "$fileWeb"
-
-    groupIds=("javax.servlet" "javax.servlet" "taglibs" "org.apache.tomcat.embed")
-    artifactIds=("javax.servlet-api" "jstl" "standard" "tomcat-embed-core")
-    versions=("4.0.1" "1.2" "1.1.2" "9.0.50")
-    scope=("provided" "compile" "compile" "provided")
-
-    for i in "${!groupIds[@]}"
-    do
-        xmlstarlet edit --inplace \
-        -N x="http://maven.apache.org/POM/4.0.0" \
-        --subnode "/x:project/x:dependencies" \
-        --type elem -n dependency \
-        --subnode "//dependency[last()]" \
-        --type elem -n groupId -v "${groupIds[$i]}" \
-        --subnode "//dependency[last()]" \
-        --type elem -n artifactId -v "${artifactIds[$i]}" \
-        --subnode "//dependency[last()]" \
-        --type elem -n version -v "${versions[$i]}" \
-        --subnode "//dependency[last()]" \
-        --type elem -n scope -v "${scope[$i]}" "$filePom"
-    done
-    # Array de plugins
-    pluginGroupIds=("org.apache.tomcat.maven" "org.apache.maven.plugins")
-    pluginArtifactIds=("tomcat7-maven-plugin" "maven-war-plugin")
-    pluginVersions=("2.2" "3.3.1")
-
-    # Agregar plugins
-    for i in "${!pluginGroupIds[@]}"
-    do
-        xmlstarlet edit --inplace \
-        -N x="http://maven.apache.org/POM/4.0.0" \
-        --subnode "/x:project/x:build/x:pluginManagement/x:plugins" \
-        --type elem -n plugin \
-        --subnode "//plugin[last()]" \
-        --type elem -n groupId -v "${pluginGroupIds[$i]}" \
-        --subnode "//plugin[last()]" \
-        --type elem -n artifactId -v "${pluginArtifactIds[$i]}" \
-        --subnode "//plugin[last()]" \
-        --type elem -n version -v "${pluginVersions[$i]}" "$filePom"
-    done
-
-    xmlstarlet edit --inplace \
-    -N x="http://maven.apache.org/POM/4.0.0" \
-    --subnode "//x:plugin[x:groupId='org.apache.tomcat.maven' and x:artifactId='tomcat7-maven-plugin']" \
-    --type elem -n configuration \
-    --subnode "//x:plugin[x:groupId='org.apache.tomcat.maven' and x:artifactId='tomcat7-maven-plugin']/configuration" \
-    --type elem -n port -v "9090" \
-    --subnode "//x:plugin[x:groupId='org.apache.tomcat.maven' and x:artifactId='tomcat7-maven-plugin']/configuration" \
-    --type elem -n path -v "/" \
-    --subnode "//x:plugin[x:groupId='org.apache.tomcat.maven' and x:artifactId='tomcat7-maven-plugin']/configuration" \
-    --type elem -n contextReloadable -v "true" "$filePom"
-}
-
-function createMavenProject() {
-    read -p "Ingrese el nombre del proyecto: " projectName
-    read -p "Ingrese el groupID (por ejemplo, com.example): " groupId
-    read -p "Ingrese el artifactid: " artifactId
-
-    echo "Seleccione el tipo de proyecto:"
-    echo "1 - quickstart | DEFAULT"
-    echo "2 - webapp"
-    read -p "Opción: " projectType
-
-    case $projectType in
-        1)
-            archetype="maven-archetype-quickstart"
-    mvn archetype:generate -DgroupId=$groupId -DartifactId=$artifactId -DarchetypeArtifactId=$archetype -DinteractiveMode=false -Dversion=1.0 -Dpackage=$groupId.$artifactId -DarchetypeVersion=1.4 -DarchetypeGroupId=org.apache.maven.archetypes -DoutputDirectory=$defaultPath
-            ;;
-        2)
-            archetype="maven-archetype-webapp"
-    mvn archetype:generate -DgroupId=$groupId -DartifactId=$artifactId -DarchetypeArtifactId=$archetype -DinteractiveMode=false -Dversion=1.0 -Dpackage=$groupId.$artifactId -DarchetypeVersion=1.4 -DarchetypeGroupId=org.apache.maven.archetypes -DoutputDirectory=$defaultPath
-    createWebApp "$projectName"
-            ;;
-        *)
-            archetype="maven-archetype-quickstart"
-    mvn archetype:generate -DgroupId=$groupId -DartifactId=$artifactId -DarchetypeArtifactId=$archetype -DinteractiveMode=false -Dversion=1.0 -Dpackage=$groupId.$artifactId -DarchetypeVersion=1.4 -DarchetypeGroupId=org.apache.maven.archetypes -DoutputDirectory=$defaultPath
-            ;;
-    esac
-}
-
-function showHelp() {
-    echo "Uso: dJavaUtils comando [argumento]"
-
-    echo ""
-    echo "Comandos:"
-    echo "  --createMavenProject | -c  Crea un nuevo proyecto Maven en el directorio por defecto"
-    echo "                             utilizando el arquetipo especificado."
-    echo ""
-    echo "  --runJava | -r             Compila el proyecto y ejecuta la clase principal del"
-    echo "                             mismo."
-    echo ""
-    echo "  --injectDependencies | -i  Descarga todas las dependencias de un proyecto."
-    echo ""
-    echo "  --setDefaultPath | -s      Establece la ruta predeterminada donde se crearán los"
-    echo "                             proyectos de Maven."
-    echo ""
-    echo "  --help | -h            Muestra esta ayuda."
-}
-# Function to set default path
-function setDefaultPath {
-  
-  # Check if all parameters are provided
-  if [ "$#" -ne 1 ]; then
-    echo "Error: to setDefaultPath expecify the path of workspace. use uniUtils --help for more information."
-    return 1
-  fi
-  # Get the absolute path of the directory
-  dir=$(readlink -f "$1")
-
-  # Check if uniUtils directory exists
-  if [ ! -d "$HOME/.config/dJavaUtils/" ]; then
-    mkdir $HOME/.config/dJavaUtils/
-  fi
-
-  # Check if default path file exists
-  if [ ! -f "$HOME/.config/dJavaUtils/default_path.txt" ]; then
-    touch $HOME/.config/dJavaUtils/default_path.txt
-  fi
-
-  # Write default path to file
-  echo "$dir" > $HOME/.config/dJavaUtils/default_path.txt
-  echo "Default path set to: $dir"
-}
-
-
-# Function to check if default path file exists and create it if not
-function checkDefaultPath {
-  # Check if uniUtils directory exists
-  if [ ! -d "$HOME/.config/dJavaUtils/" ]; then
-    mkdir $HOME/.config/dJavaUtils/
-  fi
-
-  # Check if default path file exists
-  if [ ! -f "$HOME/.config/dJavaUtils/default_path.txt" ]; then
-    touch $HOME/.config/dJavaUtils/default_path.txt
-  fi
-
-  # Check if default path file has a path set
-  if [ ! -s "$HOME/.config/uniUtils/default_path.txt" ]; then
-    echo "Default path file is empty. Set default path using 'uniUtils --setDefaultPath <path>'"
-  fi
-}
 
 main() {
-   if [[ $# -eq 0 ]]; then
-        showHelp
-        return
-    fi
+  # Call checkDefaultPath only if not called with setDefaultPath option
+  if [ "$1" != "--setDefaultPath" ] && [ "$1" != "-s" ]; then
+    checkDefaultPath
+  fi
+  clear
+  # Check if no arguments are passed
+  if [ $# -eq 0 ]; then
+      showHelp
+  fi
     case "$1" in
         --runJava | -rj)
-            runJava "$2" "$3"
+            runJava "$2"
+            ;;
+        --deployJava | -dj)
+            deployJava "$2"
             ;;
         --createMavenProject | -cm)
             createMavenProject
