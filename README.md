@@ -13,7 +13,7 @@ dJavaUtils command [argument]
 
 --createMavenProject or -c: Creates a new Maven project in the default directory using the specified archetype.
 
---runJava or -r: Compiles the project and runs its main class.
+--runJava or -rj: Compiles the project and runs its main class.
 
 --deployJava or -dj: Compiles the project and deploy on tomcat
 

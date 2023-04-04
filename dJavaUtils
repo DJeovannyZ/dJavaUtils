@@ -13,9 +13,10 @@ defaultPath=$(cat "$HOME/.config/dJavaUtils/default_path.txt")
 function injectDependencies() {
     # obtener ruta absoluta del proyecto
     projectPath=$(realpath "$1")
-
     # Ejecutar el comando 'mvn dependency:copy-dependencies' en la raíz del proyecto para descargar las dependencias
     mvn dependency:copy-dependencies -DoutputDirectory="$projectPath/target/dependency" -f "$projectPath/pom.xml"
+    cd "$projectPath"
+    mvn eclipse:eclipse
 }
 
 
