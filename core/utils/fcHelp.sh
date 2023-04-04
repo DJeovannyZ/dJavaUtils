@@ -10,6 +10,7 @@ function showHelp() {
     echo ""
     echo "  --runJava | -r             Compila el proyecto y ejecuta la clase principal del"
     echo "                             mismo."
+    echo "  --deployJava | -dj         Compila el proyecto y lo despliega en tomcat"
     echo ""
     echo "  --injectDependencies | -i  Descarga todas las dependencias de un proyecto."
     echo ""
