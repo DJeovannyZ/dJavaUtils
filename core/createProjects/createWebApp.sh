@@ -5,16 +5,23 @@ function createWebApp() {
     filePom="$defaultPath/$projectName/pom.xml"
     fileWeb="$defaultPath/$projectName/src/main/webapp/WEB-INF/"
     fileIndex="$defaultPath/$projectName/src/main/webapp/"
+    metaInf="$defaultPath/$projectName/src/main/webapp/META-INF"
+    mkdir -p "$metaInf"
     
     cp -rf "$HOME/.config/dJavaUtils/web.xml" "$fileWeb"
     cp -rf "$HOME/.config/dJavaUtils/index.jsp" "$fileIndex"
 
     mkdir -p "$defaultPath/$projectName/src/main/java/"
+    #servlets dependencies
+    # groupIds=("javax.servlet" "javax.servlet" "taglibs" "org.apache.tomcat.embed")
+    # artifactIds=("javax.servlet-api" "jstl" "standard" "tomcat-embed-core")
+    # versions=("4.0.1" "1.2" "1.1.2" "9.0.50")
+    # scope=("provided" "compile" "compile" "provided")
 
-    groupIds=("javax.servlet" "javax.servlet" "taglibs" "org.apache.tomcat.embed")
-    artifactIds=("javax.servlet-api" "jstl" "standard" "tomcat-embed-core")
-    versions=("4.0.1" "1.2" "1.1.2" "9.0.50")
-    scope=("provided" "compile" "compile" "provided")
+    groupIds=("taglibs" "org.apache.tomcat.embed")
+    artifactIds=("standard" "tomcat-embed-core")
+    versions=("1.1.2" "9.0.50")
+    scope=("compile" "provided")
 
     for i in "${!groupIds[@]}"
     do

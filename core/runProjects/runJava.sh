@@ -10,7 +10,7 @@ function runJava(){
     mvn compile -f "$projectPath/pom.xml"
 
     # encontrar la ruta absoluta del archivo de la clase principal dentro de projectPath
-    mainClassFile=$(find "$sourcePath" -type f -name '*.java' -exec grep -l 'public static void main(String\[\] args)' {} \;)
+    mainClassFile=$(find "$sourcePath" -type f -name '*.java' -exec grep -l 'public static void main' {} \;)
 
     # encontrar el paquete de la clase principal y el nombre de la clase sin la extensión .java
     packageMainClass=$(grep -o '^\s*package\s\+\(\S\+\)' "$mainClassFile" | sed 's/^\s*package\s\+//' | tr -d ';')

@@ -11,16 +11,25 @@ function createMavenProject() {
     case $projectType in
         1)
             archetype="maven-archetype-quickstart"
-    mvn archetype:generate -DgroupId=$groupId -DartifactId=$artifactId -DarchetypeArtifactId=$archetype -DinteractiveMode=false -Dversion=1.0 -Dpackage=$groupId.$artifactId -DarchetypeVersion=1.4 -DarchetypeGroupId=org.apache.maven.archetypes -DoutputDirectory=$defaultPath
+    mvn archetype:generate -DgroupId=$groupId -DartifactId=$artifactId -DarchetypeArtifactId=$archetype -DinteractiveMode=false -Dversion=1.0 -Dpackage=$groupId.$artifactId -DarchetypeVersion=1.4 -DarchetypeGroupId=org.apache.maven.archetypes  -DoutputDirectory=$defaultPath
+    lvim "$defaultPath/$projectName"
+    cd "$defaultPath/$projectName"
+    exec zsh
             ;;
         2)
             archetype="maven-archetype-webapp"
-    mvn archetype:generate -DgroupId=$groupId -DartifactId=$artifactId -DarchetypeArtifactId=$archetype -DinteractiveMode=false -Dversion=1.0 -Dpackage=$groupId.$artifactId -DarchetypeVersion=1.4 -DarchetypeGroupId=org.apache.maven.archetypes -DoutputDirectory=$defaultPath
+    mvn archetype:generate -DgroupId=$groupId -DartifactId=$artifactId -DarchetypeArtifactId=$archetype -DinteractiveMode=false -Dversion=1.0 -Dpackage=$groupId.$artifactId -DarchetypeVersion=1.4 -DarchetypeGroupId=org.apache.maven.archetypes  -DoutputDirectory=$defaultPath
     createWebApp "$projectName"
+    lvim "$defaultPath/$projectName"
+    cd "$defaultPath/$projectName"
+    exec zsh
             ;;
         *)
             archetype="maven-archetype-quickstart"
-    mvn archetype:generate -DgroupId=$groupId -DartifactId=$artifactId -DarchetypeArtifactId=$archetype -DinteractiveMode=false -Dversion=1.0 -Dpackage=$groupId.$artifactId -DarchetypeVersion=1.4 -DarchetypeGroupId=org.apache.maven.archetypes -DoutputDirectory=$defaultPath
+    mvn archetype:generate -DgroupId=$groupId -DartifactId=$artifactId -DarchetypeArtifactId=$archetype -DinteractiveMode=false -Dversion=1.0 -Dpackage=$groupId.$artifactId -DarchetypeVersion=1.4 -DarchetypeGroupId=org.apache.maven.archetypes  -DoutputDirectory=$defaultPath
+    lvim "$defaultPath/$projectName"
+    cd "$defaultPath/$projectName"
+    exec zsh
             ;;
     esac
 }
