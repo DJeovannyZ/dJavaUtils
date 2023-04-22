@@ -6,7 +6,7 @@ source /home/djeovanz/scriptsUtils/dJavaUtils/core/runProjects/runJava.sh
 source /home/djeovanz/scriptsUtils/dJavaUtils/core/runProjects/deployJava.sh
 source /home/djeovanz/scriptsUtils/dJavaUtils/core/createProjects/createWebApp.sh
 source /home/djeovanz/scriptsUtils/dJavaUtils/core/createProjects/createMavenProject.sh
-
+source /home/djeovanz/scriptsUtils/dJavaUtils/core/createProjects/createJavaFile.sh
 defaultPath=$(cat "$HOME/.config/dJavaUtils/default_path.txt")
 
 

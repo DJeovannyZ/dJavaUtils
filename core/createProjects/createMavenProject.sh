@@ -19,7 +19,7 @@ function createMavenProject() {
         2)
             archetype="maven-archetype-webapp"
     mvn archetype:generate -DgroupId=$groupId -DartifactId=$artifactId -DarchetypeArtifactId=$archetype -DinteractiveMode=false -Dversion=1.0 -Dpackage=$groupId.$artifactId -DarchetypeVersion=1.4 -DarchetypeGroupId=org.apache.maven.archetypes  -DoutputDirectory=$defaultPath
-    createWebApp "$projectName"
+    createWebApp "$projectName" "$groupId"
     lvim "$defaultPath/$projectName"
     cd "$defaultPath/$projectName"
     exec zsh
