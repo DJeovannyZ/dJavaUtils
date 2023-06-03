@@ -19,7 +19,7 @@ function injectDependencies() {
     mvn eclipse:eclipse
 }
 
-
+//prueba
 main() {
   # Call checkDefaultPath only if not called with setDefaultPath option
   if [ "$1" != "--setDefaultPath" ] && [ "$1" != "-s" ]; then
